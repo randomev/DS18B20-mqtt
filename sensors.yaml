@@ -3,6 +3,7 @@ mqtt:
   username: None
   password: None
   interval_seconds: 30
+  client_id: pajalampo
 sensors:
 - path: /sys/bus/w1/devices/28-00000728cf11/w1_slave
   friendly: paja1

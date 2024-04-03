@@ -23,18 +23,31 @@ def read_temp_raw(path):
 @click.command()
 @click.option('--config', '-c', help='path to your config file i.e. sensors.yml')
 def main(config):
+    # are sensors registered to Home Assistant already
+    discovery_topics_sent = {}
     # Initialize the mqtt connection
     config_yaml = loadConfig(config)
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     client.username_pw_set(config_yaml['mqtt']['username'], config_yaml['mqtt']['password'])
     client.connect(config_yaml['mqtt']['broker'])
+    
+    client_id=config_yaml['mqtt']['client_id']
+
     client.loop_start()
-    while True:
-        for sensor in config_yaml['sensors']:
-            sensor_value = read_temp_raw(sensor['path'])
-            sensor_name = sensor['friendly']
-            friendly_name = "home-assistant/{}/temperature".format(sensor_name)
-            client.publish(friendly_name, sensor_value)
-            print(friendly_name, sensor_value)
-        time.sleep(int(config_yaml['mqtt']['interval_seconds']))
+    for sensor in config_yaml['sensors']:
+       sensor_value = read_temp_raw(sensor['path'])
+       sensor_name = sensor['friendly']
+       friendly_name = "homeassistant/sensor/{}/{}".format(client_id, sensor_name)
+       if(friendly_name in discovery_topics_sent) == False:
+                 devpl = { "name": config.device_name,
+                         "identifiers": client_id,
+                         "manufacturer": config.manufacturer
+                         }
+
+                 devplj = json.dumps(devpl).encode('utf-8')
+
+
+
+       client.publish(friendly_name, sensor_value)
+       print(friendly_name, sensor_value)
 main()
