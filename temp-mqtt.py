@@ -10,7 +10,7 @@ import yaml
 
 def loadConfig(path):
     with open(path, 'r') as ymlfile:
-        config = yaml.load(ymlfile)
+        config = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     return config
 def read_temp_raw(path):
     sensor_file = open(path, 'r') # Opens the temperature device file
@@ -25,7 +25,7 @@ def read_temp_raw(path):
 def main(config):
     # Initialize the mqtt connection
     config_yaml = loadConfig(config)
-    client = mqtt.Client()
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
     client.username_pw_set(config_yaml['mqtt']['username'], config_yaml['mqtt']['password'])
     client.connect(config_yaml['mqtt']['broker'])
     client.loop_start()

@@ -1,10 +1,10 @@
 mqtt:
-  broker: "broker-servername"
-  username: homeassistant
-  password: yourpassword
+  broker: 10.73.73.6
+  username: None
+  password: None
   interval_seconds: 30
 sensors:
-- path: /sys/bus/w1/devices/28-sensorid/w1_slave
-  friendly: balcony
-- path: /sys/bus/w1/devices/28-000004cdb2e8/w1_slave
-  friendly: livingroom
+- path: /sys/bus/w1/devices/28-00000728cf11/w1_slave
+  friendly: paja1
+- path: /sys/bus/w1/devices/28-0000072ab10d/w1_slave
+  friendly: paja2
