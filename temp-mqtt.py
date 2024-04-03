@@ -7,11 +7,13 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publishpython
 import click
 import yaml
+import json
 
 def loadConfig(path):
     with open(path, 'r') as ymlfile:
         config = yaml.load(ymlfile, Loader=yaml.SafeLoader)
     return config
+
 def read_temp_raw(path):
     sensor_file = open(path, 'r') # Opens the temperature device file
     raw_data = sensor_file.readlines() # Returns the text
@@ -22,6 +24,7 @@ def read_temp_raw(path):
 
 @click.command()
 @click.option('--config', '-c', help='path to your config file i.e. sensors.yml')
+
 def main(config):
     # are sensors registered to Home Assistant already
     discovery_topics_sent = {}
@@ -35,19 +38,25 @@ def main(config):
 
     client.loop_start()
     for sensor in config_yaml['sensors']:
-       sensor_value = read_temp_raw(sensor['path'])
-       sensor_name = sensor['friendly']
-       friendly_name = "homeassistant/sensor/{}/{}".format(client_id, sensor_name)
-       if(friendly_name in discovery_topics_sent) == False:
-                 devpl = { "name": config.device_name,
-                         "identifiers": client_id,
-                         "manufacturer": config.manufacturer
-                         }
+        sensor_value = read_temp_raw(sensor['path'])
+        sensor_name = sensor['friendly']
+        publish_path = "homeassistant/sensor/{}/{}".format(client_id, sensor_name)
+        discovery_path = "homeassistant/sensor/" + str(client_id) + "_" + str(sensor_name) + "/config"
+        uid = str(client_id) + "_" + str(sensor_name)
 
-                 devplj = json.dumps(devpl).encode('utf-8')
+        if(sensor_name in discovery_topics_sent) == False:
+            devpl = { "name": sensor_name,
+                    "identifiers": client_id,
+                    "manufacturer": config_yaml['manufacturer']
+                    }
 
+            devplj = json.dumps(devpl).encode('utf-8')
+            msg = b'{ "dev": '+ devplj +', "unique_id": "'+ uid +'", "unit_of_measurement": "C", "device_class": "temperature", "value_template": "{{ value_json.value }}", "name": "'+ sensor_name +'"}'
+            client.publish(discovery_path, msg)
+            discovery_topics_sent[sensor_name] = True
+            
+        client.publish(publish_path, sensor_value)
 
+        print(publish_path, sensor_value)
 
-       client.publish(friendly_name, sensor_value)
-       print(friendly_name, sensor_value)
 main()
