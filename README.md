@@ -31,3 +31,52 @@ cd DS18B20-mqtt
 pip install -r requirements.txt
 python temp-mqtt.py -c sensors.yml
 ```
+
+
+About Home Assistant Discovery:
+
+https://www.home-assistant.io/integrations/mqtt/#mqtt-discovery
+
+Sensors
+
+Setting up a sensor with multiple measurement values requires multiple consecutive configuration topic submissions.
+
+Configuration topic no1: homeassistant/sensor/sensorBedroomT/config
+Configuration payload no1:
+{
+   "device_class":"temperature",
+   "state_topic":"homeassistant/sensor/sensorBedroom/state",
+   "unit_of_measurement":"°C",
+   "value_template":"{{ value_json.temperature}}",
+   "unique_id":"temp01ae",
+   "device":{
+      "identifiers":[
+          "bedroom01ae"
+      ],
+      "name":"Bedroom",
+      "manufacturer": "Example sensors Ltd.",
+      "model": "K9",
+      "serial_number": "12AE3010545",
+      "hw_version": "1.01a",
+      "sw_version": "2024.1.0",
+      "configuration_url": "https://example.com/sensor_portal/config"
+   }
+}
+JSON
+Configuration topic no2: homeassistant/sensor/sensorBedroomH/config
+Configuration payload no2:
+{
+   "device_class":"humidity",
+   "state_topic":"homeassistant/sensor/sensorBedroom/state",
+   "unit_of_measurement":"%",
+   "value_template":"{{ value_json.humidity}}",
+   "unique_id":"hum01ae",
+   "device":{
+      "identifiers":[
+         "bedroom01ae"
+      ]
+   }
+}
+JSON
+The sensor identifiers or connections option allows to set up multiple entities that share the same device.
+
